@@ -25,7 +25,6 @@ export default function HospitalDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("profile")
   const [hospitalData, setHospitalData] = useState<any>(null)
-  const [profileCompleted, setProfileCompleted] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
@@ -43,19 +42,39 @@ export default function HospitalDashboard() {
     if (!user) return
 
     try {
+      // Try to get hospital details from extradetails collection
       const hospitalDoc = await getDoc(doc(db, "extradetails", user.uid))
       if (hospitalDoc.exists()) {
         const data = hospitalDoc.data()
         setHospitalData(data)
-        setProfileCompleted(true)
       } else {
-        setProfileCompleted(false)
-        router.push("/hospital/profile-setup")
+        // If no extra details, create a basic hospital data object with email
+        setHospitalData({
+          hospitalName: "Hospital",
+          email: user.email,
+          phone: "",
+          address: "",
+          city: "",
+          state: "",
+          country: "",
+          pincode: "",
+          description: "",
+        })
       }
     } catch (error) {
       console.error("Error fetching hospital data:", error)
-      setProfileCompleted(false)
-      router.push("/hospital/profile-setup")
+      // Set basic data even if there's an error
+      setHospitalData({
+        hospitalName: "Hospital",
+        email: user.email,
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        country: "",
+        pincode: "",
+        description: "",
+      })
     } finally {
       setPageLoading(false)
     }
@@ -119,27 +138,46 @@ export default function HospitalDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 bg-slate-600 rounded-xl text-white shadow-sm">
-              <span className="text-sm font-medium">Total Requests</span>
-              <span className="text-2xl font-bold">{stats.totalRequests}</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-amber-600 rounded-xl text-white shadow-sm">
-              <span className="text-sm font-medium">Pending Requests</span>
-              <span className="text-2xl font-bold">{stats.pendingRequests}</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-emerald-600 rounded-xl text-white shadow-sm">
-              <span className="text-sm font-medium">Accepted Requests</span>
-              <span className="text-2xl font-bold">{stats.acceptedRequests}</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-slate-700 rounded-xl text-white shadow-sm">
-              <span className="text-sm font-medium">Completed Donations</span>
-              <span className="text-2xl font-bold">{stats.completedDonations}</span>
-            </div>
-            <div className="flex justify-between items-center p-4 bg-emerald-700 rounded-xl text-white shadow-sm">
-              <span className="text-sm font-medium">Success Rate</span>
-              <span className="text-2xl font-bold">{stats.successRate}%</span>
-            </div>
-          </div>
+  <div className="flex items-center gap-x-6 p-4 rounded-xl border border-slate-200 bg-white">
+    <div className="text-slate-700 text-2xl font-bold">
+      T
+    </div>
+    <div>
+      <div className="text-base text-slate-600 font-medium">Total Requests</div>
+      <div className="text-3xl font-bold text-slate-800">{stats.totalRequests}</div>
+    </div>
+  </div>
+
+  <div className="flex items-center gap-x-6 p-4 rounded-xl border border-slate-200 bg-white">
+    <div className="text-amber-600 text-2xl font-bold">
+      ⏳
+    </div>
+    <div>
+      <div className="text-base text-amber-600 font-medium">Pending Requests</div>
+      <div className="text-3xl font-bold text-amber-800">{stats.pendingRequests}</div>
+    </div>
+  </div>
+
+  <div className="flex items-center gap-x-6 p-4 rounded-xl border border-slate-200 bg-white">
+    <div className="text-blue-700 text-2xl font-bold">
+      💉
+    </div>
+    <div>
+      <div className="text-base text-blue-600 font-medium">Completed Donations</div>
+      <div className="text-3xl font-bold text-blue-800">{stats.completedDonations}</div>
+    </div>
+  </div>
+
+  <div className="flex items-center gap-x-6 p-4 rounded-xl border border-slate-200 bg-white">
+    <div className="text-green-700 text-2xl font-bold">
+      ✅
+    </div>
+    <div>
+      <div className="text-base text-green-600 font-medium">Success Rate</div>
+      <div className="text-3xl font-bold text-green-800">{stats.successRate}%</div>
+    </div>
+  </div>
+</div>
         </CardContent>
       </Card>
     )
