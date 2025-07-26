@@ -3,14 +3,15 @@ import { getAuth } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAhfF4Q7uQEattUdg4OO_jc0wuugFPdLCc",
-  authDomain: "blood-donation-app-decce.firebaseapp.com",
-  projectId: "blood-donation-app-decce",
-  storageBucket: "blood-donation-app-decce.firebasestorage.app",
-  messagingSenderId: "839760259237",
-  appId: "1:839760259237:web:bf703275983f92a8f8c54c",
-  measurementId: "G-12XN5LDRCT"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 }
+
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
