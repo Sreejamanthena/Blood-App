@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth-context"
-import { Droplets, User, Weight, Activity } from "lucide-react"
+import { Droplets, User, Weight, Activity, Info } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface RequestBloodProps {
@@ -32,18 +32,73 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
   const fetchDonors = async (bloodGroup: string) => {
     setLoading(true)
     try {
-      const q = query(
-        collection(db, "donordetails"),
-        where("bloodGroup", "==", bloodGroup),
-        where("available", "==", true),
-        where("eligible", "==", true),
-      )
+      let donorsData: any[] = []
 
-      const querySnapshot = await getDocs(q)
-      const donorsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
+      if (bloodGroup === "AB+") {
+        const allBloodGroupQueries = bloodGroups.map(async (group) => {
+          const q = query(
+            collection(db, "donordetails"),
+            where("bloodGroup", "==", group),
+            where("available", "==", true),
+            where("eligible", "==", true),
+          )
+          const querySnapshot = await getDocs(q)
+          return querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isUniversalMatch: group !== bloodGroup,
+            matchType: group === bloodGroup ? "exact" : group === "O-" ? "universal_donor" : "compatible",
+          }))
+        })
+
+        const allResults = await Promise.all(allBloodGroupQueries)
+        donorsData = allResults.flat()
+      } else {
+        const exactMatchQuery = query(
+          collection(db, "donordetails"),
+          where("bloodGroup", "==", bloodGroup),
+          where("available", "==", true),
+          where("eligible", "==", true),
+        )
+
+        const universalDonorQuery = query(
+          collection(db, "donordetails"),
+          where("bloodGroup", "==", "O-"),
+          where("available", "==", true),
+          where("eligible", "==", true),
+        )
+
+        const [exactMatchSnapshot, universalDonorSnapshot] = await Promise.all([
+          getDocs(exactMatchQuery),
+          getDocs(universalDonorQuery),
+        ])
+
+        const exactMatches = exactMatchSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          isUniversalMatch: false,
+          matchType: "exact",
+        }))
+
+        const universalDonors = universalDonorSnapshot.docs
+          .filter((doc) => !exactMatches.some((exact) => exact.id === doc.id))
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isUniversalMatch: true,
+            matchType: "universal_donor",
+          }))
+
+        donorsData = [...exactMatches, ...universalDonors]
+      }
+
+      donorsData.sort((a, b) => {
+        if (a.matchType === "exact" && b.matchType !== "exact") return -1
+        if (a.matchType !== "exact" && b.matchType === "exact") return 1
+        if (a.matchType === "universal_donor" && b.matchType === "compatible") return -1
+        if (a.matchType === "compatible" && b.matchType === "universal_donor") return 1
+        return 0
+      })
 
       setDonors(donorsData)
     } catch (error) {
@@ -119,6 +174,51 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
     }
   }
 
+  const getMatchTypeBadge = (matchType: string) => {
+    switch (matchType) {
+      case "exact":
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
+            <Droplets className="h-3 w-3 mr-1" />
+            Exact Match
+          </Badge>
+        )
+      case "universal_donor":
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            <User className="h-3 w-3 mr-1" />
+            Universal Donor (O-)
+          </Badge>
+        )
+      case "compatible":
+        return (
+          <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+            <Droplets className="h-3 w-3 mr-1" />
+            Compatible
+          </Badge>
+        )
+      default:
+        return null
+    }
+  }
+
+  const getCompatibilityInfo = (selectedBloodGroup: string) => {
+    if (selectedBloodGroup === "AB+") {
+      return {
+        title: "Universal Acceptor (AB+)",
+        description:
+          "AB+ patients can receive blood from all blood groups (A+, A-, B+, B-, AB+, AB-, O+, O-) because they have all antigens.",
+        icon: "🩸",
+      }
+    } else {
+      return {
+        title: "Universal Donor Compatibility",
+        description: `${selectedBloodGroup} patients can receive from exact matches and O- donors (universal donors) who can donate to any blood type.`,
+        icon: "🔄",
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -126,16 +226,17 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
         <p className="text-slate-600">Find and request blood from eligible donors</p>
       </div>
 
-      {/* Blood Group and Units Selection */}
+      {/* Blood Group and Units Selection (Updated Layout) */}
       <Card className="shadow-sm border-slate-200 bg-white">
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-           <div className="w-full md:w-48">
-  <Label htmlFor="bloodGroup" className="text-lg font-semibold text-slate-800 pt-2 block">
+          <div className="flex flex-col md:flex-row md:items-end gap-4 pt-4">
+            {/* Blood Group */}
+             <div className="flex flex-col space-y-1 w-full md:w-48">
+  <Label htmlFor="bloodGroup" className="text-base font-semibold text-slate-800">
     Blood Group
   </Label>
   <Select value={selectedBloodGroup} onValueChange={handleBloodGroupSelect}>
-    <SelectTrigger className="border-slate-200 focus:ring-sky-500 focus:border-sky-500">
+    <SelectTrigger>
       <SelectValue placeholder="Select" />
     </SelectTrigger>
     <SelectContent>
@@ -148,8 +249,8 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
   </Select>
 </div>
 
-<div className="w-full md:w-48">
-  <Label htmlFor="units" className="text-lg font-semibold text-slate-800 pt-2 block">
+<div className="flex flex-col space-y-1 w-full md:w-48">
+  <Label htmlFor="units" className="text-base font-semibold text-slate-800">
     Units Required
   </Label>
   <Input
@@ -159,17 +260,16 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
     value={unitsRequired}
     onChange={(e) => setUnitsRequired(e.target.value)}
     placeholder="Enter units"
-    className="border-slate-200 focus:ring-sky-500 focus:border-sky-500"
   />
 </div>
 
 
-            <div className="w-full md:w-auto">
-              <Label className="sr-only">Request Button</Label>
+            {/* Submit Button */}
+            <div className="w-full md:w-auto pt-[22px]">
               <Button
                 onClick={handleRequestBlood}
                 disabled={requesting || !selectedBloodGroup || !unitsRequired || donors.length === 0}
-                className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto mt-[1.75rem] md:mt-0"
+                className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto"
               >
                 {requesting ? "Sending..." : "Request Blood"}
               </Button>
@@ -178,13 +278,35 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
         </CardContent>
       </Card>
 
-      {/* Donors List */}
+      {/* Compatibility Info */}
+      {selectedBloodGroup && (
+        <Card className="shadow-sm border-blue-200 bg-blue-50">
+          <CardContent className="pt-4">
+            <div className="flex items-start space-x-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-blue-900 mb-1">
+                  {getCompatibilityInfo(selectedBloodGroup).icon} {getCompatibilityInfo(selectedBloodGroup).title}
+                </h4>
+                <p className="text-sm text-blue-800">{getCompatibilityInfo(selectedBloodGroup).description}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Donor List */}
       {selectedBloodGroup && (
         <Card className="shadow-sm border-slate-200 bg-white">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-800">Donors Nearby</CardTitle>
+            <CardTitle className="text-lg font-semibold text-slate-800">Available Donors</CardTitle>
             <CardDescription>
               {loading ? "Loading donors..." : `${donors.length} eligible donors found`}
+              {donors.length > 0 && (
+                <span className="block text-xs text-slate-500 mt-1">
+                  Includes exact matches and compatible donors (universal donor/acceptor rules applied)
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -202,14 +324,15 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
                 {donors.map((donor) => (
                   <Card key={donor.id} className="border-l-4 border-l-sky-500 bg-slate-50">
                     <CardContent className="pt-4">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center space-x-2">
                           <Droplets className="h-4 w-4 text-sky-600" />
-                          <div>
-                            <p className="text-xs text-slate-500">Blood Group</p>
-                            <p className="font-semibold text-sky-600">{donor.bloodGroup}</p>
-                          </div>
+                          <span className="font-semibold text-sky-600">{donor.bloodGroup}</span>
                         </div>
+                        {getMatchTypeBadge(donor.matchType)}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="flex items-center space-x-2">
                           <User className="h-4 w-4 text-slate-500" />
                           <div>
@@ -231,6 +354,19 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
                             <Badge variant="secondary" className="capitalize">
                               {donor.healthCondition}
                             </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Droplets className="h-4 w-4 text-slate-500" />
+                          <div>
+                            <p className="text-xs text-slate-500">Compatibility</p>
+                            <p className="text-xs font-medium text-slate-700">
+                              {donor.matchType === "exact"
+                                ? "Perfect Match"
+                                : donor.matchType === "universal_donor"
+                                  ? "Universal Donor"
+                                  : "Compatible"}
+                            </p>
                           </div>
                         </div>
                       </div>
