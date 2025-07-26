@@ -355,43 +355,43 @@ export default function DonorProfile({ donorData, profileCompleted, onProfileUpd
 
   return (
     <Card className="shadow-lg border-0 bg-white">
-      <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 rounded-t-lg">
-        <CardTitle className="text-xl font-bold text-gray-800">Your Profile</CardTitle>
-        <CardDescription className="text-gray-600">Your donor information</CardDescription>
-      </CardHeader>
+      <CardHeader className="bg-emerald-50 border-b rounded-t-lg">
+  <CardTitle className="text-xl font-bold text-gray-800">Your Profile</CardTitle>
+  <CardDescription className="text-gray-600">Your donor information</CardDescription>
+</CardHeader>
       <CardContent className="p-6">
         {/* Eligibility Status */}
-        {donorData?.eligible === false && (
-          <Alert variant="destructive" className="mb-6 border-red-200 bg-red-50">
-            <AlertDescription className="text-red-700">
-              <strong>❌ Not Eligible for Donation</strong>
-              <br />
-              Reasons: {donorData.eligibilityReasons?.join(", ")}
-              <br />
-              <em>You can update your profile to become eligible and appear in hospital searches.</em>
-            </AlertDescription>
-          </Alert>
-        )}
+       {donorData?.eligible === false && (
+  <Alert variant="destructive" className="mb-6 border-red-300 bg-red-100">
+    <AlertDescription className="text-red-800">
+      <strong>❌ Not Eligible for Donation</strong>
+      <br />
+      Reasons: {donorData.eligibilityReasons?.join(", ")}
+      <br />
+      <em>You can update your profile to become eligible and appear in hospital searches.</em>
+    </AlertDescription>
+  </Alert>
+)}
 
-        {donorData?.eligible === true && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
-            <AlertDescription className="text-green-800">
-              <strong>✅ Eligible for Blood Donation</strong>
-              <br />
-              You meet all requirements and are available for hospital requests.
-            </AlertDescription>
-          </Alert>
-        )}
+{donorData?.eligible === true && (
+  <Alert className="mb-6 border-green-300 bg-green-100">
+    <AlertDescription className="text-green-900">
+      <strong>✅ Eligible for Blood Donation</strong>
+      <br />
+      You meet all requirements and are available for hospital requests.
+    </AlertDescription>
+  </Alert>
+)}
 
-        {donorData && donorData.eligible === undefined && (
-          <Alert variant="destructive" className="mb-6 border-red-200 bg-red-50">
-            <AlertDescription className="text-red-700">
-              <strong>❌ Not Eligible for Donation</strong>
-              <br />
-              Please complete your profile with all required information to check eligibility.
-            </AlertDescription>
-          </Alert>
-        )}
+{donorData && donorData.eligible === undefined && (
+  <Alert variant="destructive" className="mb-6 border-red-300 bg-red-100">
+    <AlertDescription className="text-red-800">
+      <strong>❌ Not Eligible for Donation</strong>
+      <br />
+      Please complete your profile with all required information to check eligibility.
+    </AlertDescription>
+  </Alert>
+)}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
@@ -420,10 +420,11 @@ export default function DonorProfile({ donorData, profileCompleted, onProfileUpd
                 {donorData?.pincode && ` - ${donorData.pincode}`}
               </p>
             </div>
-            <div className="p-4 bg-red-50 rounded-xl">
-              <Label className="text-sm font-semibold text-gray-600">Blood Group</Label>
-              <p className="text-2xl font-bold text-red-600">{donorData?.bloodGroup}</p>
-            </div>
+            <div className="p-4 rounded-xl">
+  <Label className="text-sm font-semibold text-gray-600">Blood Group</Label>
+  <p className="text-2xl font-bold text-red-600">{donorData?.bloodGroup}</p>
+</div>
+
             <div className="p-4 bg-gray-50 rounded-xl">
               <Label className="text-sm font-semibold text-gray-600">Health Condition</Label>
               <p className="text-lg font-bold text-gray-800">{donorData?.healthCondition}</p>
@@ -438,12 +439,13 @@ export default function DonorProfile({ donorData, profileCompleted, onProfileUpd
         </div>
 
         {donorData?.lastDonationDate && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-xl">
-            <Label className="text-sm font-semibold text-gray-600">Last Donation</Label>
-            <p className="text-lg font-bold text-blue-600">
-              {new Date(donorData.lastDonationDate).toLocaleDateString()}
-            </p>
-          </div>
+          <div className="mt-4 p-4 rounded-xl">
+  <Label className="text-sm font-semibold text-gray-600">Last Donation</Label>
+  <p className="text-lg font-bold">
+    {new Date(donorData.lastDonationDate).toLocaleDateString()}
+  </p>
+</div>
+
         )}
 
         <div className="mt-6">
