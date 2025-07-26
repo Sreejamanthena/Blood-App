@@ -10,52 +10,16 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Building2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc, getDoc } from "firebase/firestore"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
-import { collection, query, where, getDocs } from "firebase/firestore"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import LoadingSpinner from "@/components/loading-spinner"
 
 export default function HospitalAuth() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-
-    try {
-      const donorQuery = query(collection(db, "donors"), where("email", "==", email))
-      const donorSnapshot = await getDocs(donorQuery)
-      if (!donorSnapshot.empty) {
-        setError("This email is already registered as a donor. Please use a different email or login to donor portal.")
-        setIsLoading(false)
-        return
-      }
-
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-
-      await setDoc(doc(db, "hospital", userCredential.user.uid), {
-        email: email,
-        createdAt: new Date(),
-        profileCompleted: false,
-      })
-
-      router.push("/hospital/profile-setup")
-    } catch (error: any) {
-      setError(error.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -69,21 +33,24 @@ export default function HospitalAuth() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
 
+      // Verify user is a hospital by checking if they exist in hospital collection
       const hospitalDoc = await getDoc(doc(db, "hospital", userCredential.user.uid))
       if (!hospitalDoc.exists()) {
-        setError("This account is not registered as a hospital. Please sign up as a hospital or login to donor portal.")
+        setError("This account is not registered as a hospital. Please contact administrator.")
         setIsLoading(false)
         return
       }
 
-      const hospitalDetailsDoc = await getDoc(doc(db, "extradetails", userCredential.user.uid))
-      if (hospitalDetailsDoc.exists()) {
-        router.push("/hospital/dashboard")
-      } else {
-        router.push("/hospital/profile-setup")
-      }
+      // Redirect directly to dashboard - no profile setup needed
+      router.push("/hospital/dashboard")
     } catch (error: any) {
-      setError(error.message)
+      if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+        setError("Invalid email or password. Please check your credentials.")
+      } else if (error.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.")
+      } else {
+        setError("Sign in failed. Please try again.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -108,106 +75,57 @@ export default function HospitalAuth() {
               Hospital Portal
             </CardTitle>
             <CardDescription className="text-lg text-slate-600 mt-2">
-              Sign in or create an account to continue
+              Sign in with your hospital credentials
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6">
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin" className="font-semibold">
-                  Sign In
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="font-semibold">
-                  Sign Up
-                </TabsTrigger>
-              </TabsList>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                  Hospital Email
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your hospital email"
+                  required
+                  className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  required
+                  className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
+                />
+              </div>
+              {error && (
+                <Alert variant="destructive" className="border-rose-200 bg-rose-50">
+                  <AlertDescription className="text-rose-700">{error}</AlertDescription>
+                </Alert>
+              )}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={isLoading}
+              >
+                {isLoading ? <LoadingSpinner size="sm" text="" /> : "Sign In"}
+              </Button>
+            </form>
 
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-sm font-semibold text-slate-700">
-                      Email
-                    </Label>
-                    <Input
-                      id="signin-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter hospital email"
-                      required
-                      className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-semibold text-slate-700">
-                      Password
-                    </Label>
-                    <Input
-                      id="signin-password"
-                      name="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      required
-                      className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
-                    />
-                  </div>
-                  {error && (
-                    <Alert variant="destructive" className="border-rose-200 bg-rose-50">
-                      <AlertDescription className="text-rose-700">{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <LoadingSpinner size="sm" text="" /> : "Sign In"}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-sm font-semibold text-slate-700">
-                      Email*
-                    </Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter hospital email"
-                      required
-                      className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-semibold text-slate-700">
-                      Password*
-                    </Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      placeholder="Create a password"
-                      required
-                      className="h-11 border-2 border-slate-200 focus:border-sky-500 transition-colors"
-                    />
-                  </div>
-                  {error && (
-                    <Alert variant="destructive" className="border-rose-200 bg-rose-50">
-                      <AlertDescription className="text-rose-700">{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <LoadingSpinner size="sm" text="" /> : "Create Account"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <div className="mt-6 p-4 bg-sky-50 rounded-lg border border-sky-200">
+              <p className="text-sm text-sky-700 text-center">
+                <strong>Note:</strong> Hospital accounts are managed by administrators. Contact support if you need
+                access credentials.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
