@@ -10,18 +10,33 @@ interface ProgressTrackerProps {
 
 export default function ProgressTracker({ currentStep, steps, status }: ProgressTrackerProps) {
   const getStepStatus = (stepIndex: number) => {
-    if (status === "rejected" && stepIndex === 1) {
-      return "rejected"
-    }
-    if (status === "donated" && stepIndex === 2) {
-      return "donated"
-    }
-    if (stepIndex < currentStep) {
+    // Step 0: Request Sent - Always completed (green) since request exists
+    if (stepIndex === 0) {
       return "completed"
     }
-    if (stepIndex === currentStep) {
-      return "current"
+
+    // Step 1: Donor Accepted
+    if (stepIndex === 1) {
+      if (status === "rejected") {
+        return "rejected"
+      }
+      if (status === "accepted" || status === "donated") {
+        return "completed"
+      }
+      return "pending"
     }
+
+    // Step 2: Donation Completed
+    if (stepIndex === 2) {
+      if (status === "donated") {
+        return "completed"
+      }
+      if (status === "accepted") {
+        return "current"
+      }
+      return "pending"
+    }
+
     return "pending"
   }
 
@@ -35,16 +50,14 @@ export default function ProgressTracker({ currentStep, steps, status }: Progress
               className={`w-6 h-6 rounded-full flex items-center justify-center ${
                 stepStatus === "completed"
                   ? "bg-emerald-500 text-white"
-                  : stepStatus === "donated"
-                    ? "bg-emerald-600 text-white"
-                    : stepStatus === "rejected"
-                      ? "bg-rose-500 text-white"
-                      : stepStatus === "current"
-                        ? "bg-sky-500 text-white"
-                        : "bg-slate-300 text-slate-600"
+                  : stepStatus === "rejected"
+                    ? "bg-rose-500 text-white"
+                    : stepStatus === "current"
+                      ? "bg-sky-500 text-white"
+                      : "bg-slate-300 text-slate-600"
               }`}
             >
-              {stepStatus === "completed" || stepStatus === "donated" ? (
+              {stepStatus === "completed" ? (
                 <Check className="h-4 w-4" />
               ) : stepStatus === "rejected" ? (
                 <span className="text-xs">✕</span>
@@ -54,10 +67,10 @@ export default function ProgressTracker({ currentStep, steps, status }: Progress
             </div>
             <span
               className={`text-sm ${
-                stepStatus === "completed" || stepStatus === "current"
-                  ? "text-slate-900 font-medium"
-                  : stepStatus === "donated"
-                    ? "text-emerald-600 font-medium"
+                stepStatus === "completed"
+                  ? "text-emerald-600 font-medium"
+                  : stepStatus === "current"
+                    ? "text-slate-900 font-medium"
                     : stepStatus === "rejected"
                       ? "text-rose-600 font-medium"
                       : "text-slate-500"
