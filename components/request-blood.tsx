@@ -40,7 +40,7 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
             collection(db, "donordetails"),
             where("bloodGroup", "==", group),
             where("available", "==", true),
-            where("eligible", "==", true),
+            where("eligible", "==", true)
           )
           const querySnapshot = await getDocs(q)
           return querySnapshot.docs.map((doc) => ({
@@ -58,14 +58,14 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
           collection(db, "donordetails"),
           where("bloodGroup", "==", bloodGroup),
           where("available", "==", true),
-          where("eligible", "==", true),
+          where("eligible", "==", true)
         )
 
         const universalDonorQuery = query(
           collection(db, "donordetails"),
           where("bloodGroup", "==", "O-"),
           where("available", "==", true),
-          where("eligible", "==", true),
+          where("eligible", "==", true)
         )
 
         const [exactMatchSnapshot, universalDonorSnapshot] = await Promise.all([
@@ -129,6 +129,7 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
           hospitalId: user.uid,
           donorId: donor.id,
           bloodGroup: selectedBloodGroup,
+          donorBloodGroup: donor.bloodGroup,
           unitsRequired: Number.parseInt(unitsRequired),
           hospitalName: hospitalData.hospitalName || "Hospital",
           hospitalPhone: hospitalData.phone || "",
@@ -226,56 +227,57 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
         <p className="text-slate-600">Find and request blood from eligible donors</p>
       </div>
 
-      {/* Blood Group and Units Selection (Updated Layout) */}
+      {/* Blood Group & Units */}
       <Card className="shadow-sm border-slate-200 bg-white">
         <CardContent>
-          <div className="flex flex-col md:flex-row md:items-end gap-4 pt-4">
-            {/* Blood Group */}
-             <div className="flex flex-col space-y-1 w-full md:w-48">
-  <Label htmlFor="bloodGroup" className="text-base font-semibold text-slate-800">
-    Blood Group
-  </Label>
-  <Select value={selectedBloodGroup} onValueChange={handleBloodGroupSelect}>
-    <SelectTrigger>
-      <SelectValue placeholder="Select" />
-    </SelectTrigger>
-    <SelectContent>
-      {bloodGroups.map((group) => (
-        <SelectItem key={group} value={group}>
-          {group}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+  <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+    {/* Blood Group */}
+    <div className="w-full md:w-48 pt-4">
+      <Label htmlFor="bloodGroup" className="text-xl font-bold text-slate-800 block mb-1">
+        Blood Group
+      </Label>
+      <Select value={selectedBloodGroup} onValueChange={handleBloodGroupSelect}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select" />
+        </SelectTrigger>
+        <SelectContent>
+          {bloodGroups.map((group) => (
+            <SelectItem key={group} value={group}>
+              {group}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
 
-<div className="flex flex-col space-y-1 w-full md:w-48">
-  <Label htmlFor="units" className="text-base font-semibold text-slate-800">
-    Units Required
-  </Label>
-  <Input
-    id="units"
-    type="number"
-    min="1"
-    value={unitsRequired}
-    onChange={(e) => setUnitsRequired(e.target.value)}
-    placeholder="Enter units"
-  />
-</div>
+    {/* Units Required */}
+    <div className="w-full md:w-48 pt-4">
+      <Label htmlFor="units" className="text-xl font-bold text-slate-800 block mb-1">
+        Units Required
+      </Label>
+      <Input
+        id="units"
+        type="number"
+        min="1"
+        value={unitsRequired}
+        onChange={(e) => setUnitsRequired(e.target.value)}
+        placeholder="Enter units"
+      />
+    </div>
 
+    {/* Request Button */}
+    <div className="w-full md:w-auto pt-8">
+      <Button
+        onClick={handleRequestBlood}
+        disabled={requesting || !selectedBloodGroup || !unitsRequired || donors.length === 0}
+        className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto"
+      >
+        {requesting ? "Sending..." : "Request Blood"}
+      </Button>
+    </div>
+  </div>
+</CardContent>
 
-            {/* Submit Button */}
-            <div className="w-full md:w-auto pt-[22px]">
-              <Button
-                onClick={handleRequestBlood}
-                disabled={requesting || !selectedBloodGroup || !unitsRequired || donors.length === 0}
-                className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto"
-              >
-                {requesting ? "Sending..." : "Request Blood"}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Compatibility Info */}
@@ -286,16 +288,19 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
               <Info className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
                 <h4 className="font-semibold text-blue-900 mb-1">
-                  {getCompatibilityInfo(selectedBloodGroup).icon} {getCompatibilityInfo(selectedBloodGroup).title}
+                  {getCompatibilityInfo(selectedBloodGroup).icon}{" "}
+                  {getCompatibilityInfo(selectedBloodGroup).title}
                 </h4>
-                <p className="text-sm text-blue-800">{getCompatibilityInfo(selectedBloodGroup).description}</p>
+                <p className="text-sm text-blue-800">
+                  {getCompatibilityInfo(selectedBloodGroup).description}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Donor List */}
+      {/* Donors List */}
       {selectedBloodGroup && (
         <Card className="shadow-sm border-slate-200 bg-white">
           <CardHeader>
@@ -364,8 +369,8 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
                               {donor.matchType === "exact"
                                 ? "Perfect Match"
                                 : donor.matchType === "universal_donor"
-                                  ? "Universal Donor"
-                                  : "Compatible"}
+                                ? "Universal Donor"
+                                : "Compatible"}
                             </p>
                           </div>
                         </div>
