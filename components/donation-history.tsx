@@ -56,7 +56,6 @@ export default function DonationHistory() {
         <p className="text-gray-600">Completed blood donations at your hospital</p>
       </div>
 
-      {/* Statistics */}
       
 
       {/* Donations List */}
@@ -84,7 +83,9 @@ export default function DonationHistory() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <Droplets className="h-4 w-4 text-blue-600" />
-                          <span className="font-medium text-blue-600">{donation.bloodGroup}</span>
+                          <span className="font-medium text-blue-600">
+                            {donation.donorBloodGroup || donation.bloodGroup}
+                          </span>
                         </div>
                       </div>
 
@@ -117,4 +118,3 @@ export default function DonationHistory() {
     </div>
   )
 }
-
