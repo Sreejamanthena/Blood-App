@@ -135,7 +135,9 @@ export default function RequestedDonors() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center space-x-2">
                         <Droplets className="h-5 w-5 text-sky-600" />
-                        <span className="font-bold text-lg text-sky-600">{request.bloodGroup}</span>
+                        <span className="font-bold text-lg text-sky-600">
+                          {request.donorBloodGroup || request.bloodGroup}
+                        </span>
                       </div>
                       <Badge className={`${getStatusColor(request.status)} border font-medium`}>
                         {request.status === "accepted" && <CheckCircle className="h-3 w-3 mr-1" />}
@@ -186,7 +188,13 @@ export default function RequestedDonors() {
                 <div className="space-y-3 p-4 bg-gradient-to-r from-sky-50 to-slate-50 rounded-xl">
                   <div className="flex items-center space-x-2">
                     <Droplets className="h-5 w-5 text-sky-600" />
-                    <span className="font-bold text-lg text-sky-600">Blood Group: {selectedDonor.bloodGroup}</span>
+                    <span className="font-bold text-lg text-sky-600">
+                      Donor Blood Group: {selectedDonor.donorBloodGroup || selectedDonor.bloodGroup}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-700">
+                    <span className="font-medium">Requested Blood Group: </span>
+                    <span className="font-bold text-sky-600">{selectedDonor.bloodGroup}</span>
                   </div>
                   <div className="text-sm text-slate-700">
                     <span className="font-medium">Units Required: </span>
