@@ -57,22 +57,12 @@ export default function DonationHistory() {
       </div>
 
       {/* Statistics */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Completed Donations</p>
-              <p className="text-3xl font-bold text-green-600">{donations.length}</p>
-            </div>
-            <User className="h-12 w-12 text-green-600" />
-          </div>
-        </CardContent>
-      </Card>
+      
 
       {/* Donations List */}
       <Card>
         <CardHeader>
-          <CardTitle>Completed Donations ({donations.length})</CardTitle>
+          <CardTitle>Completed Donations</CardTitle>
         </CardHeader>
         <CardContent>
           {donations.length === 0 ? (
@@ -127,3 +117,4 @@ export default function DonationHistory() {
     </div>
   )
 }
+
