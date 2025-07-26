@@ -43,14 +43,16 @@ export default function DonorSidebar({ activeTab, setActiveTab }: DonorSidebarPr
 
   return (
     <Sidebar className="border-r-0 shadow-sm">
-      <SidebarHeader className="border-b p-6 bg-gradient-to-r from-rose-600 to-rose-700">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <Heart className="h-6 w-6 text-white" />
-          </div>
-          <span className="font-bold text-lg text-white">Donor Portal</span>
-        </div>
-      </SidebarHeader>
+      <SidebarHeader className="border-b p-6 bg-rose-500">
+  <div className="flex items-center space-x-3">
+    <div className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
+      <Heart className="h-6 w-6 text-white" />
+    </div>
+    <span className="font-bold text-lg text-white">Donor Portal</span>
+  </div>
+</SidebarHeader>
+
+
       <SidebarContent className="bg-white">
         <SidebarGroup className="px-4 py-2">
           <SidebarGroupContent>
