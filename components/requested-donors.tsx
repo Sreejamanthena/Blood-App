@@ -80,16 +80,17 @@ export default function RequestedDonors() {
     }
   }
 
+  // Updated progress step calculation
   const getProgressStep = (status: string) => {
     switch (status) {
       case "pending":
-        return 0
+        return 0 // Step 1 (Request Sent) is always completed, currently on step 1
       case "accepted":
-        return 1
+        return 1 // Step 2 (Donor Accepted) is current
       case "donated":
-        return 2
+        return 2 // Step 3 (Donation Completed) is current
       case "rejected":
-        return 0
+        return 0 // Back to step 1, but with rejected status
       default:
         return 0
     }
@@ -106,25 +107,7 @@ export default function RequestedDonors() {
         <p className="text-slate-600">Manage your blood donation requests</p>
       </div>
 
-      {/* Filter */}
-      <Card className="shadow-sm border-slate-200 bg-white">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-slate-800">Filter Requests</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-48 border-2 border-slate-200 focus:border-sky-500">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Requests</SelectItem>
-              <SelectItem value="pending">Pending Only</SelectItem>
-              <SelectItem value="accepted">Accepted Only</SelectItem>
-              <SelectItem value="donated">Donated Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      
 
       {/* Requests List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -187,7 +170,7 @@ export default function RequestedDonors() {
               </Alert>
             ) : (
               <div className="space-y-6">
-                {/* Request Tracking - Moved to Top */}
+                {/* Request Tracking - At Top */}
                 <div>
                   <h4 className="font-bold text-slate-800 text-lg mb-4">Request Status</h4>
                   <div className="p-4 bg-slate-50 rounded-xl">
@@ -213,6 +196,12 @@ export default function RequestedDonors() {
                     <span className="font-medium">Requested: </span>
                     {new Date(selectedDonor.createdAt?.toDate()).toLocaleString()}
                   </div>
+                  {selectedDonor.status === "accepted" && selectedDonor.acceptedAt && (
+                    <div className="text-sm text-emerald-700">
+                      <span className="font-medium">Accepted: </span>
+                      {new Date(selectedDonor.acceptedAt?.toDate()).toLocaleString()}
+                    </div>
+                  )}
                   {selectedDonor.status === "donated" && selectedDonor.donatedAt && (
                     <div className="text-sm text-emerald-700">
                       <span className="font-medium">Donated: </span>
@@ -221,7 +210,7 @@ export default function RequestedDonors() {
                   )}
                 </div>
 
-                {/* Donor Details - Moved to Bottom */}
+                {/* Donor Details - At Bottom */}
                 {donorDetails && (
                   <div className="border-t pt-4 space-y-3">
                     <h4 className="font-bold text-slate-800 text-lg">Donor Information</h4>
