@@ -156,7 +156,7 @@ export default function AcceptedDonors() {
                             <h4 className="font-semibold text-lg text-slate-800">{donor?.name || "Loading..."}</h4>
                             <div className="flex items-center space-x-2 text-sm text-slate-600">
                               <Droplets className="h-4 w-4 text-sky-600" />
-                              <span className="font-medium text-sky-600">{request.bloodGroup}</span>
+                              <span className="font-medium text-sky-600">{donor?.bloodGroup}</span>
                             </div>
                           </div>
 
