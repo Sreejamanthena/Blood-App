@@ -129,44 +129,51 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
       {/* Blood Group and Units Selection */}
       <Card className="shadow-sm border-slate-200 bg-white">
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
-            <div className="w-full md:w-48">
-              <Label htmlFor="bloodGroup" className="text-lg font-semibold text-slate-800">
-                Blood Group
-              </Label>
-              <Select value={selectedBloodGroup} onValueChange={handleBloodGroupSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {bloodGroups.map((group) => (
-                    <SelectItem key={group} value={group}>
-                      {group}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+           <div className="w-full md:w-48">
+  <Label htmlFor="bloodGroup" className="text-lg font-semibold text-slate-800 pt-2 block">
+    Blood Group
+  </Label>
+  <Select value={selectedBloodGroup} onValueChange={handleBloodGroupSelect}>
+    <SelectTrigger className="border-slate-200 focus:ring-sky-500 focus:border-sky-500">
+      <SelectValue placeholder="Select" />
+    </SelectTrigger>
+    <SelectContent>
+      {bloodGroups.map((group) => (
+        <SelectItem key={group} value={group}>
+          {group}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+<div className="w-full md:w-48">
+  <Label htmlFor="units" className="text-lg font-semibold text-slate-800 pt-2 block">
+    Units Required
+  </Label>
+  <Input
+    id="units"
+    type="number"
+    min="1"
+    value={unitsRequired}
+    onChange={(e) => setUnitsRequired(e.target.value)}
+    placeholder="Enter units"
+    className="border-slate-200 focus:ring-sky-500 focus:border-sky-500"
+  />
+</div>
+
+
+            <div className="w-full md:w-auto">
+              <Label className="sr-only">Request Button</Label>
+              <Button
+                onClick={handleRequestBlood}
+                disabled={requesting || !selectedBloodGroup || !unitsRequired || donors.length === 0}
+                className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto mt-[1.75rem] md:mt-0"
+              >
+                {requesting ? "Sending..." : "Request Blood"}
+              </Button>
             </div>
-            <div className="w-full md:w-48">
-              <Label htmlFor="units" className="text-lg font-semibold text-slate-800">
-                Units Required
-              </Label>
-              <Input
-                id="units"
-                type="number"
-                min="1"
-                value={unitsRequired}
-                onChange={(e) => setUnitsRequired(e.target.value)}
-                placeholder="Enter units"
-              />
-            </div>
-            <Button
-              onClick={handleRequestBlood}
-              disabled={requesting || !selectedBloodGroup || !unitsRequired || donors.length === 0}
-              className="bg-sky-600 hover:bg-sky-700 w-full md:w-auto"
-            >
-              {requesting ? "Sending..." : "Request Blood"}
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -175,7 +182,7 @@ export default function RequestBlood({ hospitalData }: RequestBloodProps) {
       {selectedBloodGroup && (
         <Card className="shadow-sm border-slate-200 bg-white">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-800">Available Donors</CardTitle>
+            <CardTitle className="text-lg font-semibold text-slate-800">Donors Nearby</CardTitle>
             <CardDescription>
               {loading ? "Loading donors..." : `${donors.length} eligible donors found`}
             </CardDescription>
