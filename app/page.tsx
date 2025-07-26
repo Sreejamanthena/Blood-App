@@ -189,22 +189,22 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-400">+1 (555) 123-4567</span>
+                  <span className="text-gray-400">7893402633</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-400">support@bloodconnect.com</span>
+                  <span className="text-gray-400">yasaswinipudi30@gmail.com</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-400">123 Healthcare Ave, Medical City</span>
+                  <MapPin className="h-6 w-6 text-gray-400" />
+                  <span className="text-gray-400">Juvvalapalem Road, Near Nataraj Theater, Balusumoodi, Bhimavaram, Andhra Pradesh 534202</span>
                 </div>
               </div>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Emergency</h3>
               <p className="text-gray-400 mb-2">For urgent blood requirements:</p>
-              <p className="text-red-400 font-semibold text-lg">+1 (555) 911-BLOOD</p>
+              <p className="text-red-400 font-semibold text-lg">08816‑23809</p>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
